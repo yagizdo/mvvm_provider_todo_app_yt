@@ -10,8 +10,14 @@ class HomeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        onPressed: (){
+          showAlertDialog(context);
+        },
+        child: const Icon(Icons.add),
+      ),
       appBar: AppBar(
-        title: Text('Todo with Mvvm - Provider'),
+        title: const Text('Todo with Mvvm - Provider'),
       ),
       body: SafeArea(
         child: Column(
@@ -31,5 +37,84 @@ class HomeView extends StatelessWidget {
         ),
       ),
     );
+  }
+
+   showAlertDialog(BuildContext context) {
+    // Title Controller
+    TextEditingController titleController = TextEditingController();
+
+    // Description Controller
+    TextEditingController descController = TextEditingController();
+
+    // Form key
+    final formKey = GlobalKey<FormState>();
+
+    // Add Todo button
+    Widget addButton = ElevatedButton(onPressed: (){
+
+      // Create todo object
+      Todo todo = Todo(titleController.text, descController.text, false);
+
+      // Validation check
+      if(formKey.currentState!.validate()) {
+        Provider.of<HomeViewModel>(context,listen: false).addTodo(todo);
+        titleController.text = '';
+        descController.text = '';
+        Navigator.pop(context);
+      }
+    }, child: const Text('Add Todo'));
+
+    // Cancel Button
+    Widget cancelButton = TextButton(onPressed: (){
+      Navigator.pop(context);
+    }, child: const Text('Cancel',style: TextStyle(color: Colors.red),));
+
+    // Alert Dialog
+    AlertDialog alert = AlertDialog(
+      title: const Text('Add Todo'),
+      content: Form(
+        key: formKey,
+        child: SizedBox(
+          height: 200,
+          child: Column(
+            children: [
+              // Title
+              TextFormField(
+                decoration: const InputDecoration(
+                  border: const OutlineInputBorder(),
+                  label: const Text('Title')
+                ),
+                controller: titleController,
+
+                // Validator
+                validator: (value) {
+                  if(value!.isEmpty) {
+                    return 'Please write title';
+                  }
+                },
+              ),
+              const SizedBox(height: 20,),
+
+              // Description
+              TextFormField(
+                decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    label: Text('Description')
+                ),
+                controller: descController,
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        addButton,
+        cancelButton,
+      ],
+    );
+
+    showDialog(context: context, builder: (BuildContext context) {
+      return alert;
+    });
   }
 }
